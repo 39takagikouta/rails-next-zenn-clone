@@ -12,6 +12,11 @@ gem "mysql2", "~> 0.5"
 # pumaサーバーを使えるようにする（標準gem）
 gem "puma", "~> 5.0"
 
+gem "rack-cors"
+
+# 環境毎の設定管理を行う
+gem "config"
+
 # rails本体（標準gem）
 gem "rails", "~> 7.0.4"
 
