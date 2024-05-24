@@ -39,6 +39,11 @@ gem "letter_opener_web"
 # レスポンスJSONを制御する
 gem "active_model_serializers"
 
+# メッセージを日本語化
+gem "rails-i18n"
+
+gem "kaminari"
+
 
 group :development, :test do
   # pry コンソールを使えるようにする。
@@ -58,4 +63,6 @@ group :development, :test do
   gem "factory_bot_rails"
 
   gem "faker"
+
+  gem "bullet"
 end
