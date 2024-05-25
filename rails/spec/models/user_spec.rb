@@ -7,7 +7,6 @@ RSpec.describe User, type: :model do
     it "認証済みの user レコードを正常に新規作成できる" do
       expect(user).to be_valid
       expect(user).to be_confirmed
-      binding.pry
     end
   end
 end
