@@ -12,6 +12,16 @@ class Api::V1::Current::ArticlesController < Api::V1::BaseController
     render json: article
   end
 
+  def index
+    articles = current_user.articles.not_unsaved.order(created_at: :desc)
+    render json: articles
+  end
+
+  def show
+    article = current_user.articles.find(params[:id])
+    render json: article
+  end
+
   private
 
   def article_params
