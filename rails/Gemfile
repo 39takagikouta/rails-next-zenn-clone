@@ -23,6 +23,28 @@ gem "rails", "~> 7.0.4"
 # タイムゾーン情報を提供する（標準gem）
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 
+# ユーザー認証を提供する
+gem "devise"
+
+# devise を日本語化する
+gem "devise-i18n"
+
+# ユーザーのトークン認証を提供する
+gem "devise_token_auth"
+
+# 開発環境でメール送信をテストする
+gem "letter_opener_web"
+
+# レスポンスJSONを制御する
+gem "active_model_serializers"
+
+# メッセージを日本語化
+gem "rails-i18n"
+
+gem "kaminari"
+
+gem "enum_help"
+
 group :development, :test do
   # pry コンソールを使えるようにする。
   gem "pry-byebug"
@@ -36,4 +58,11 @@ group :development, :test do
   gem "rubocop-faker"
   gem "rubocop-rails"
   gem "rubocop-rspec"
+
+  # テスト用データを作成する
+  gem "factory_bot_rails"
+
+  gem "faker"
+
+  gem "bullet"
 end
