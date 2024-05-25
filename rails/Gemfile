@@ -44,6 +44,7 @@ gem "rails-i18n"
 
 gem "kaminari"
 
+gem "enum_help"
 
 group :development, :test do
   # pry コンソールを使えるようにする。

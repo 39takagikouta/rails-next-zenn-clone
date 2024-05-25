@@ -1,82 +1,64 @@
 require "rails_helper"
 
-RSpec.describe "Api::V1::Articles", type: :request do
-  describe "GET api/v1/articles" do
-    subject { get(api_v1_articles_path(params)) }
+RSpec.describe "Api::V1::Current::Articles", type: :request do
+  describe "POST api/v1/current/articles" do
+    subject { post(api_v1_current_articles_path, headers:) }
 
-    before do
-      create_list(:article, 25, status: :published)
-      create_list(:article, 8, status: :draft)
-    end
+    let(:headers) { current_user.create_new_auth_token }
+    let(:current_user) { create(:user) }
 
-    context "page を params で送信しない時" do
-      let(:params) { nil }
-
-      it "1ページ目のレコード10件取得できる" do
-        subject
+    context "ログインユーザーに紐づく未保存ステータスの記事が0件の時" do
+      it "未保存ステータスの記事が新規作成される" do
+        expect { subject }.to change { current_user.articles.count }.by(1)
+        expect(current_user.articles.last).to be_unsaved
         res = JSON.parse(response.body)
-        expect(res.keys).to eq ["articles", "meta"]
-        expect(res["articles"].length).to eq 10
-        expect(res["articles"][0].keys).to eq ["id", "title", "content", "created_at", "from_today", "user"]
-        expect(res["articles"][0]["user"].keys).to eq ["name"]
-        expect(res["meta"].keys).to eq ["current_page", "total_pages"]
-        expect(res["meta"]["current_page"]).to eq 1
-        expect(res["meta"]["total_pages"]).to eq 3
+        expect(res.keys).to eq ["id", "title", "content", "status", "created_at", "from_today", "user"]
+        expect(res["user"].keys).to eq ["name"]
         expect(response).to have_http_status(:ok)
       end
     end
 
-    context "page を params で送信した時" do
-      let(:params) { { page: 2 } }
+    context "ログインユーザーに紐づく未保存ステータスの記事が1件の時" do
+      before { create(:article, user: current_user, status: :unsaved) }
 
-      it "該当ページ目のレコード10件取得できる" do
-        subject
+      it "未保存ステータスの記事が新規作成される" do
+        expect { subject }.not_to change { current_user.articles.count }
         res = JSON.parse(response.body)
-        expect(res.keys).to eq ["articles", "meta"]
-        expect(res["articles"].length).to eq 10
-        expect(res["articles"][0].keys).to eq ["id", "title", "content", "created_at", "from_today", "user"]
-        expect(res["articles"][0]["user"].keys).to eq ["name"]
-        expect(res["meta"].keys).to eq ["current_page", "total_pages"]
-        expect(res["meta"]["current_page"]).to eq 2
-        expect(res["meta"]["total_pages"]).to eq 3
+        expect(res.keys).to eq ["id", "title", "content", "status", "created_at", "from_today", "user"]
+        expect(res["user"].keys).to eq ["name"]
         expect(response).to have_http_status(:ok)
       end
     end
   end
 
-  describe "GET api/v1/articles/:id" do
-    subject { get(api_v1_article_path(article_id)) }
+  describe "PATCH api/v1/current/articles" do
+    subject { patch(api_v1_current_article_path(id), headers:, params:) }
 
-    let(:article) { create(:article, status:) }
+    let(:headers) { current_user.create_new_auth_token }
+    let(:current_user) { create(:user) }
+    let(:other_user) { create(:user) }
+    let(:params) { { "article": { "title": "テストタイトル2", "content": "テスト本文2", "status": "published" } } }
 
-    context "article_id に対応する articles レコードが存在する時" do
-      let(:article_id) { article.id }
+    context ":id がログインユーザーに紐づく articles レコードの id である時" do
+      let(:current_user_article) { create(:article, title: "テストタイトル1", content: "テスト本文1", status: :draft, user: current_user) }
+      let(:id) { current_user_article.id }
 
-      context "articles レコードのステータスが公開中の時" do
-        let(:status) { :published }
-
-        it "正常にレコードを取得できる" do
-          subject
-          res = JSON.parse(response.body)
-          expect(res.keys).to eq ["id", "title", "content", "created_at", "from_today", "user"]
-          expect(res["user"].keys).to eq ["name"]
-          expect(response).to have_http_status(:ok)
-        end
-      end
-
-      context "articles レコードのステータスが下書きの時" do
-        let(:status) { :draft }
-
-        it "ActiveRecord::RecordNotFound エラーが返る" do
-          expect { subject }.to raise_error(ActiveRecord::RecordNotFound)
-        end
+      it "正常にレコードを更新できる" do
+        expect { subject }.to change { current_user_article.reload.title }.from("テストタイトル1").to("テストタイトル2") and
+          change { current_user_article.reload.content }.from("テスト本文1").to("テスト本文2") and
+          change { current_user_article.reload.status }.from("draft").to("published")
+        res = JSON.parse(response.body)
+        expect(res.keys).to eq ["id", "title", "content", "status", "created_at", "from_today", "user"]
+        expect(res["user"].keys).to eq ["name"]
+        expect(response).to have_http_status(:ok)
       end
     end
 
-    context "article_id に対応する articles レコードが存在しない時" do
-      let(:article_id) { 10_000_000_000 }
+    context ":id がログインユーザーに紐づく articles レコードの id ではない時" do
+      let(:other_user_article) { create(:article, user: other_user) }
+      let(:id) { other_user_article.id }
 
-      it "ActiveRecord::RecordNotFound エラーが返る" do
+      it "例外が発生する" do
         expect { subject }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
