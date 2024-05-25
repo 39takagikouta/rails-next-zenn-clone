@@ -35,7 +35,6 @@ gem "devise_token_auth"
 # 開発環境でメール送信をテストする
 gem "letter_opener_web"
 
-
 # レスポンスJSONを制御する
 gem "active_model_serializers"
 
